@@ -52,7 +52,7 @@
     <string name="action_buy">Order More</string>
 
     <!-- Label for editor overflow menu option that register a sale for the current product [CHAR LIMIT=20] -->
-    <string name="action_sale">Register a Sale</string>
+    <string name="action_sale">Sale</string>
 
     <!-- Label for editor overflow menu option that deletes the current product [CHAR LIMIT=20] -->
     <string name="action_delete">Delete</string>
@@ -87,7 +87,9 @@
 
     <string name="text_select_image_button">Select Image</string>
 
-    <string name="currency_symbol">$</string>
+    <string name="currency_symbol">€</string>
+
+    <string name="unit_price">EURO</string>
 
     <string name="no_supplier_phone">Supplier Phone not registered</string>
 

@@ -1,12 +1,16 @@
 package com.example.popey.inventory_app;
 
+import android.content.ContentUris;
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.popey.inventory_app.data.ProductContract;
 
@@ -23,25 +27,44 @@ public class ProductCursorAdapter extends CursorAdapter {
     }
 
     @Override
-    public void bindView(View view, Context context, Cursor cursor) {
-        // Find individual views that we want to modify in the list item layout
+    public void bindView(View view, final Context context, Cursor cursor) {
+
         TextView nameTextView = (TextView) view.findViewById(R.id.name);
         TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
         TextView priceTextView = (TextView) view.findViewById(R.id.price);
+        ImageButton saleImageButton = (ImageButton) view.findViewById(R.id.button_sale);
 
-        // Find the columns of product attributes that we're interested in
-        int nameColumnIndex = cursor.getColumnIndex(ProductContract.ProductEntry.COLUMN_PRODUCT_NAME);
-        int quantityColumnIndex = cursor.getColumnIndex(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY);
-        int priceColumnIndex = cursor.getColumnIndex(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE);
+        final long id = cursor.getLong(cursor.getColumnIndexOrThrow(ProductContract.ProductEntry._ID));
+        final String productName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
+        final String productPrice = cursor.getString(cursor.getColumnIndexOrThrow("price"));
+        final String productQuantity = cursor.getString(cursor.getColumnIndexOrThrow("quantity"));
 
-        // Read the product attributes from the Cursor for the current product
-        String productName = cursor.getString(nameColumnIndex);
-        String productQuantity = cursor.getString(quantityColumnIndex);
-        String productPrice = cursor.getString(priceColumnIndex);
 
-        // Update the TextViews with the attributes for the current product
         nameTextView.setText(productName);
-        quantityTextView.setText(productQuantity);
         priceTextView.setText(productPrice);
+        quantityTextView.setText(productQuantity);
+        saleImageButton.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+                int quantity = Integer.parseInt(productQuantity);
+                if (quantity > 0) {
+                    quantity = quantity - 1;
+                } else {
+                    Toast.makeText(context, "Run out", Toast.LENGTH_LONG).show();
+                }
+                String changedQuantity = String.valueOf(quantity);
+                ContentValues values = new ContentValues();
+
+                values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_NAME, productName);
+                values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE, productPrice);
+                values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY, changedQuantity);
+
+                context.getContentResolver().update(ContentUris.withAppendedId(ProductContract.ProductEntry.CONTENT_URI, id), values, null, null);
+            }
+        });
+
     }
+
 }

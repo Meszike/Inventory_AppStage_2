@@ -23,6 +23,7 @@ public class CatalogActivity extends AppCompatActivity  implements LoaderManager
     /** Adapter for the ListView */
     ProductCursorAdapter mCursorAdapter;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
