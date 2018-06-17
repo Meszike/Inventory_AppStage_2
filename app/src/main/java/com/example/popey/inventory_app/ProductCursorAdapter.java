@@ -28,39 +28,34 @@ public class ProductCursorAdapter extends CursorAdapter {
 
     @Override
     public void bindView(View view, final Context context, Cursor cursor) {
-
-        TextView nameTextView = (TextView) view.findViewById(R.id.name);
-        TextView quantityTextView = (TextView) view.findViewById(R.id.quantity);
-        TextView priceTextView = (TextView) view.findViewById(R.id.price);
-        ImageButton saleImageButton = (ImageButton) view.findViewById(R.id.button_sale);
-
+        TextView nameTextView = view.findViewById(R.id.name);
+        TextView quantityTextView = view.findViewById(R.id.quantity);
+        TextView priceTextView = view.findViewById(R.id.price);
+        ImageButton saleImageButton = view.findViewById(R.id.button_sale);
         final long id = cursor.getLong(cursor.getColumnIndexOrThrow(ProductContract.ProductEntry._ID));
         final String productName = cursor.getString(cursor.getColumnIndexOrThrow("name"));
         final String productPrice = cursor.getString(cursor.getColumnIndexOrThrow("price"));
         final String productQuantity = cursor.getString(cursor.getColumnIndexOrThrow("quantity"));
-
-
         nameTextView.setText(productName);
         priceTextView.setText(productPrice);
         quantityTextView.setText(productQuantity);
+
+        //Declarate ImageButton
         saleImageButton.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View v) {
-
                 int quantity = Integer.parseInt(productQuantity);
                 if (quantity > 0) {
                     quantity = quantity - 1;
                 } else {
-                    Toast.makeText(context, "Run out", Toast.LENGTH_LONG).show();
+                    Toast.makeText(context, R.string.run_out, Toast.LENGTH_LONG).show();
                 }
                 String changedQuantity = String.valueOf(quantity);
                 ContentValues values = new ContentValues();
-
                 values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_NAME, productName);
                 values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE, productPrice);
                 values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY, changedQuantity);
-
                 context.getContentResolver().update(ContentUris.withAppendedId(ProductContract.ProductEntry.CONTENT_URI, id), values, null, null);
             }
         });

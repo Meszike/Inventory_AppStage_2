@@ -32,9 +32,12 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.example.popey.inventory_app.data.ProductContract;
@@ -55,28 +58,20 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      * Identifier for the product data loader
      */
     private static final int EXISTING_PRODUCT_LOADER = 0;
-
     private final int PICK_IMAGE_CAMERA = 1, PICK_IMAGE_GALLERY = 2;
-
     private static final int MY_CAMERA_REQUEST_CODE = 100;
 
     /**
      * Content URI for the existing product (null if it's a new product)
      */
+    static int mSupplier = ProductContract.ProductEntry.OTHER;
+    private Spinner mSupplierSpinner;
     private Uri mCurrentProductUri;
-
     private EditText mProductName;
-
     private EditText mProductPrice;
-
     private EditText mProductQuantity;
-
     private ImageView mProductImage;
-
-    private EditText mSupplierName;
-
     private EditText mSupplierPhone;
-
     /**
      * Boolean flag that keeps track of whether the product has been edited (true) or not (false)
      */
@@ -98,7 +93,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_editor);
-
         Intent intent = getIntent();
         mCurrentProductUri = intent.getData();
 
@@ -119,14 +113,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         }
 
         // Find all relevant views that we will need to read user input from
-        mProductName = (EditText) findViewById(R.id.edit_product_name);
-        mProductPrice = (EditText) findViewById(R.id.edit_product_price);
-        mProductQuantity = (EditText) findViewById(R.id.edit_product_quantity);
-        mProductImage = (ImageView) findViewById(R.id.iv_product_image);
-        mSupplierName = (EditText) findViewById(R.id.edit_supplier_name);
-        mSupplierPhone = (EditText) findViewById(R.id.edit_supplier_phone);
-
-        Button btnSelectImage = (Button) findViewById(R.id.ib_product_select);
+        mProductName = findViewById(R.id.edit_product_name);
+        mProductPrice = findViewById(R.id.edit_product_price);
+        mProductQuantity = findViewById(R.id.edit_product_quantity);
+        mProductImage = findViewById(R.id.iv_product_image);
+        mSupplierPhone = findViewById(R.id.edit_supplier_phone);
+        mSupplierSpinner = findViewById(R.id.edit_supplier);
+        Button btnSelectImage = findViewById(R.id.ib_product_select);
 
         btnSelectImage.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -134,17 +127,14 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                 selectImage();
             }
         });
-
-        Button btnMinus = (Button) findViewById(R.id.btn_product_minus);
-        Button btnPlus = (Button) findViewById(R.id.btn_product_plus);
-
+        Button btnMinus = findViewById(R.id.btn_product_minus);
+        Button btnPlus = findViewById(R.id.btn_product_plus);
         btnMinus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 subtractQuantity();
             }
         });
-
         btnPlus.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -159,21 +149,59 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mProductPrice.setOnTouchListener(mTouchListener);
         mProductQuantity.setOnTouchListener(mTouchListener);
         mProductImage.setOnTouchListener(mTouchListener);
-        mSupplierName.setOnTouchListener(mTouchListener);
         mSupplierPhone.setOnTouchListener(mTouchListener);
+
+        setupSpinner();
+    }
+
+    private void setupSpinner() {
+        // Create adapter for spinner. The list options are from the String array it will use
+        // the spinner will use the default layout
+        ArrayAdapter supplierSpinnerAdapter = ArrayAdapter.createFromResource(this,
+                R.array.array_supplier_options, android.R.layout.simple_spinner_item);
+
+        // Specify dropdown layout style - simple list view with 1 item per line
+        supplierSpinnerAdapter.setDropDownViewResource(android.R.layout.simple_dropdown_item_1line);
+
+        // Apply the adapter to the spinner
+        mSupplierSpinner.setAdapter(supplierSpinnerAdapter);
+        // Set the integer mSelected to the constant values
+        mSupplierSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selection = (String) parent.getItemAtPosition(position);
+                if (!TextUtils.isEmpty(selection)) {
+                    if (selection.equals(getString(R.string.omron))) {
+                        mSupplier = ProductContract.ProductEntry.OMRON;
+                    } else if (selection.equals(getString(R.string.wellmed))) {
+                        mSupplier = ProductContract.ProductEntry.WELLMED;
+                    } else if (selection.equals(getString(R.string.teva))) {
+                        mSupplier = ProductContract.ProductEntry.TEVA;
+                    } else {
+                        mSupplier = ProductContract.ProductEntry.OTHER;
+                    }
+                }
+            }
+
+            // Because AdapterView is an abstract class, onNothingSelected must be defined
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mSupplier = 0;
+            }
+        });
     }
 
     private void subtractQuantity() {
         String valueString = mProductQuantity.getText().toString();
         int value = valueString.isEmpty() ? 0 : Integer.parseInt(valueString);
         if (value >= 1)
-            mProductQuantity.setText(value >= 1 ? String.valueOf(value-1) : "0");
+            mProductQuantity.setText(value >= 1 ? String.valueOf(value - 1) : "0");
     }
 
     private void addQuantity() {
         String valueString = mProductQuantity.getText().toString();
         int value = valueString.isEmpty() ? 0 : Integer.parseInt(valueString);
-        mProductQuantity.setText(String.valueOf(value+1));
+        mProductQuantity.setText(String.valueOf(value + 1));
     }
 
     /**
@@ -185,8 +213,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         super.onPrepareOptionsMenu(menu);
         // If this is a new product, hide the "Delete" menu item.
         if (mCurrentProductUri == null) {
-            MenuItem menuItemSale = menu.findItem(R.id.action_sale);
-            menuItemSale.setVisible(false);
             MenuItem menuItemDelete = menu.findItem(R.id.action_delete);
             menuItemDelete.setVisible(false);
             MenuItem menuItemBuy = menu.findItem(R.id.action_buy);
@@ -215,10 +241,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     // Exit activity
                     finish();
                 }
-                return true;
-            // Respond to a click on the "Register a Sale" menu option
-            case R.id.action_sale:
-                subtractQuantity();
                 return true;
             // Respond to a click on the "Order More" menu option
             case R.id.action_buy:
@@ -257,7 +279,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         return super.onOptionsItemSelected(item);
     }
 
-    private void redirectPhoneApp(String phoneNumber){
+    private void redirectPhoneApp(String phoneNumber) {
         if (!phoneNumber.isEmpty()) {
             Intent intent = new Intent(Intent.ACTION_DIAL, Uri.fromParts("tel", phoneNumber, null));
             startActivity(intent);
@@ -459,19 +481,13 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
      */
     private boolean saveProduct() {
         String productNameString = mProductName.getText().toString().trim();
-
         String priceString = mProductPrice.getText().toString().trim();
         Double productPriceDouble = priceString.isEmpty() ? 0.0 : Double.valueOf(priceString);
-
         String quantityString = mProductQuantity.getText().toString().trim();
         int productQuantityInt = quantityString.isEmpty() ? 0 : Integer.parseInt(quantityString);
-
-        String supplierNameString = mSupplierName.getText().toString().trim();
-
         String supplierPhoneString = mSupplierPhone.getText().toString().trim();
-
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        Bitmap bitmap = ((BitmapDrawable)mProductImage.getDrawable()).getBitmap();
+        Bitmap bitmap = ((BitmapDrawable) mProductImage.getDrawable()).getBitmap();
         bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
         byte[] image = baos.toByteArray();
 
@@ -479,7 +495,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         // and check if all the fields in the editor are blank
         if (mCurrentProductUri == null &&
                 TextUtils.isEmpty(productNameString) && productPriceDouble == 0.0 &&
-                productQuantityInt == 0 && TextUtils.isEmpty(supplierNameString) && TextUtils.isEmpty(supplierPhoneString)) {
+                productQuantityInt == 0 && TextUtils.isEmpty(supplierPhoneString)) {
             // Since no fields were modified, we can return early without creating a new product.
             // No need to create ContentValues and no need to do any ContentProvider operations.
             return true;
@@ -492,7 +508,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_PRICE, productPriceDouble);
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_QUANTITY, productQuantityInt);
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_IMAGE, image);
-        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, supplierNameString);
+        values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER_NAME, mSupplier);
         values.put(ProductContract.ProductEntry.COLUMN_PRODUCT_SUPPLIER_PHONE, supplierPhoneString);
 
         try {
@@ -582,7 +598,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             Double productPrice = cursor.getDouble(productPriceColumnIndex);
             int productQuantity = cursor.getInt(productQuantityColumnIndex);
             byte[] productImage = cursor.getBlob(productImageColumnIndex);
-            String productSupplierName = cursor.getString(productSupplierNameColumnIndex);
+            int mSupplierName = cursor.getInt(productSupplierNameColumnIndex);
             String productSupplierPhone = cursor.getString(productSupplierPhoneColumnIndex);
 
             // Update the views on the screen with the values from the database
@@ -591,10 +607,23 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
             mProductQuantity.setText(String.valueOf(productQuantity));
 
             ByteArrayInputStream imageStream = new ByteArrayInputStream(productImage);
-            Bitmap image= BitmapFactory.decodeStream(imageStream);
+            Bitmap image = BitmapFactory.decodeStream(imageStream);
             mProductImage.setImageBitmap(image);
-            mSupplierName.setText(productSupplierName);
             mSupplierPhone.setText(productSupplierPhone);
+
+            switch (mSupplierName) {
+                case ProductContract.ProductEntry.OMRON:
+                    mSupplierSpinner.setSelection(1);
+                    break;
+                case ProductContract.ProductEntry.WELLMED:
+                    mSupplierSpinner.setSelection(2);
+                    break;
+                case ProductContract.ProductEntry.TEVA:
+                    mSupplierSpinner.setSelection(3);
+                    break;
+                default:
+                    mSupplierSpinner.setSelection(0);
+            }
         }
     }
 
@@ -605,7 +634,6 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
         mProductPrice.setText("0");
         mProductQuantity.setText("0");
         mProductImage.setImageResource(R.mipmap.ic_photo);
-        mSupplierName.setText("");
         mSupplierPhone.setText("");
     }
 

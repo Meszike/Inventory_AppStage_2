@@ -49,10 +49,7 @@
     <string name="action_save">Save</string>
 
     <!-- Label for editor overflow menu option that buy the current product [CHAR LIMIT=20] -->
-    <string name="action_buy">Order More</string>
-
-    <!-- Label for editor overflow menu option that register a sale for the current product [CHAR LIMIT=20] -->
-    <string name="action_sale">Sale</string>
+    <string name="action_buy">Order</string>
 
     <!-- Label for editor overflow menu option that deletes the current product [CHAR LIMIT=20] -->
     <string name="action_delete">Delete</string>
@@ -106,4 +103,12 @@
     <string name="dialog_choose_gallery">"Choose From Gallery"</string>
 
     <string name="dialog_cancel">"Cancel"</string>
+
+    <string name="run_out">This product is run out of stock</string>
+
+    <!-- suppliers -->
+    <string name="omron">Omron</string>
+    <string name="wellmed">Wellmed</string>
+    <string name="teva">Teva</string>
+
 </resources>

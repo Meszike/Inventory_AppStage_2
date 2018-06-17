@@ -1,4 +1,5 @@
 package com.example.popey.inventory_app;
+
 import android.support.design.widget.FloatingActionButton;
 import android.app.LoaderManager;
 import android.content.ContentUris;
@@ -15,12 +16,16 @@ import android.widget.ListView;
 
 import com.example.popey.inventory_app.data.ProductContract;
 
-public class CatalogActivity extends AppCompatActivity  implements LoaderManager.LoaderCallbacks<Cursor> {
+public class CatalogActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-    /** Identifier for the product data loader */
+    /**
+     * Identifier for the product data loader
+     */
     private static final int PRODUCT_LOADER = 0;
 
-    /** Adapter for the ListView */
+    /**
+     * Adapter for the ListView
+     */
     ProductCursorAdapter mCursorAdapter;
 
 
@@ -29,7 +34,7 @@ public class CatalogActivity extends AppCompatActivity  implements LoaderManager
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_catalog);
 
-        FloatingActionButton fab =  findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -39,7 +44,7 @@ public class CatalogActivity extends AppCompatActivity  implements LoaderManager
         });
 
         // Find the ListView which will be populated with the product data
-        ListView productListView = (ListView) findViewById(R.id.list);
+        ListView productListView = findViewById(R.id.list);
 
         // Find and set empty view on the ListView, so that it only shows when the list has 0 items.
         View emptyView = findViewById(R.id.empty_view);
