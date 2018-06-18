@@ -619,7 +619,7 @@ public class EditorActivity extends AppCompatActivity implements LoaderManager.L
                     mSupplierSpinner.setSelection(2);
                     break;
                 case ProductContract.ProductEntry.TEVA:
-                    mSupplierSpinner.setSelection(3);
+                    mSupplierSpinner.setSelection(0);
                     break;
                 default:
                     mSupplierSpinner.setSelection(0);
